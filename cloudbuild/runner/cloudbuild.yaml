@@ -1,0 +1,24 @@
+---
+substitutions:
+  _PACKER_VERSION: "1.8.3"
+  _ANSIBLE_VERSION: "6.2.0"
+timeout: 1800s
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    dir: "cloudbuild/runner"
+    args:
+      - build
+      - --build-arg
+      - ANSIBLE_VERSION=${_ANSIBLE_VERSION}
+      - --build-arg
+      - PACKER_VERSION=${_PACKER_VERSION}
+      - -t
+      - gcr.io/$PROJECT_ID/ansible-packer:${_PACKER_VERSION}
+      - -t
+      - gcr.io/$PROJECT_ID/ansible-packer
+      - .
+images:
+  - gcr.io/$PROJECT_ID/ansible-packer:latest
+  - gcr.io/$PROJECT_ID/ansible-packer:${_PACKER_VERSION}
+tags:
+  - cloud-builders-community

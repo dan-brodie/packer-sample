@@ -1,0 +1,25 @@
+substitutions:
+  _IMAGE_FAMILY: "atd-packer-windows-base"
+  _SOURCE_IMAGE_FAMILY: "windows-2019"
+  _SOURCE_IMAGE_PROJECT: "windows-cloud"
+  _NETWORK: "default"
+  _SUBNETWORK: "default"
+  _ZONE: "europe-west1-b"
+timeout: 3600s
+steps:
+  - name: gcr.io/$PROJECT_ID/ansible-packer
+    entrypoint: sh
+    args:
+      - -ce
+      - |
+        packer init packer/config.pkr.hcl
+        packer build \
+          packer/template-windows-base.pkr.hcl
+    env:
+      - "PROJECT_ID=${PROJECT_ID}"
+      - "IMAGE_FAMILY=${_IMAGE_FAMILY}"
+      - "SOURCE_IMAGE_FAMILY=${_SOURCE_IMAGE_FAMILY}"
+      - "SOURCE_IMAGE_PROJECT=${_SOURCE_IMAGE_PROJECT}"
+      - "NETWORK=${_NETWORK}"
+      - "SUBNETWORK=${_SUBNETWORK}"
+      - "ZONE=${_ZONE}"

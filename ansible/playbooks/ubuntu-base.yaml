@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: true
+  roles:
+    - linux-common
+    - Ubuntu-22-CIS
+  become: True
+  vars_files:
+    - "vars/linux.yaml"
+    - "vars/dev.yaml" # fall back to dev settings if not exist
+    - "vars/{{ env }}.yaml"

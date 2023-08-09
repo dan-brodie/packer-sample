@@ -1,0 +1,21 @@
+---
+- name: Update apt repo and cache
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 3600
+  become: True
+
+- name: Install list of system packages
+  apt:
+    name: "{{ os_packages_list }}"
+  register: result
+  retries: 3
+  until: result is success
+  become: True
+
+- name: Clean apt cache
+  apt:
+    autoclean: yes
+    autoremove: yes
+  become: True

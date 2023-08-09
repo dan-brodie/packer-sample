@@ -1,0 +1,23 @@
+---
+steps:
+  - id: ubuntu-base
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:alpine"
+    entrypoint: sh
+    args:
+      - -ce
+      - |
+        gcloud builds submit --async \
+          --config cloudbuild/ubuntu-base.yaml \
+          .
+    waitFor: ["-"]
+
+  - id: windows-base
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:alpine"
+    entrypoint: sh
+    args:
+      - -ce
+      - |
+        gcloud builds submit --async \
+          --config cloudbuild/windows-base.yaml \
+          .
+    waitFor: ["-"]

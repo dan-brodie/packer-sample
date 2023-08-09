@@ -1,0 +1,11 @@
+---
+- name: Disable Windows Defender
+  ansible.windows.win_feature:
+    name: "Windows-Defender"
+    state: absent
+  register: disable_windows_defender
+  become: True
+
+- name: Reboot if disabling windows-defender requires it
+  ansible.windows.win_reboot:
+  when: disable_windows_defender.reboot_required

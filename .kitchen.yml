@@ -1,0 +1,93 @@
+---
+driver:
+  name: gce
+  project: "my-project-123"
+  region: "europe-west1"
+  network: "default"
+  subnet: "default"
+  metadata:
+    ssh-keys: "<%= 'kitchen:' + %x( ssh-add -L | head -n1 ).rstrip! %>"
+    google-logging-enable: 1
+  service_account_scopes:
+    - logging.write
+    - monitoring.write
+  tags:
+    - kitchen
+
+transport:
+  username: kitchen
+
+provisioner:
+  name: ansible_push
+  chef_bootstrap_url: nil
+  use_instance_name: true
+
+platforms:
+  - name: ubuntu-2204-lts
+    driver:
+      image_project: ubuntu-os-cloud
+      image_family: ubuntu-2204-lts
+      disks:
+        disk0:
+          disk_size: 20
+    provisioner:
+      playbook: ansible/playbooks/ubuntu-base.yaml
+    lifecycle:
+      post_create: ansible-galaxy install -r requirements.yml
+  - name: windows-2019
+    driver:
+      metadata:
+        windows-startup-script-cmd: >-
+          winrm quickconfig -quiet &
+          net user /add kitchen &
+          net localgroup administrators kitchen /add &
+          winrm set winrm/config/service/auth @{Basic="true"}
+      image_project: windows-cloud
+      image_family: windows-2019
+      disks:
+        disk0:
+          disk_size: 50
+      email: kitchen
+    provisioner:
+      playbook: ansible/playbooks/windows-base.yaml
+      ansible_connection: winrm
+    transport:
+      name: winrm
+      winrm_transport: negotiate
+    lifecycle:
+      pre_create:
+        - local: |
+            gcloud compute firewall-rules create \
+            enable-winrm-${KITCHEN_INSTANCE_NAME} \
+            --project my-project-123 \
+            --allow=tcp:5985-5986 \
+            --source-ranges=0.0.0.0/0 \
+            --target-tags=kitchen \
+            --description='enable winrm'
+      post_create: ansible-galaxy install -r requirements.yml
+      post_destroy:
+        - local: |
+            FW_EXISTS=$(gcloud compute firewall-rules describe \
+              enable-winrm-${KITCHEN_INSTANCE_NAME} \
+              --project my-project-123 \
+              > /dev/null 2>&1 && echo true || echo false)
+            if $FW_EXISTS ; then
+              gcloud compute firewall-rules delete \
+              enable-winrm-${KITCHEN_INSTANCE_NAME} \
+              --project my-project-123
+            fi
+
+verifier:
+  name: inspec
+  inspec_tests:
+    - path: test/integration/default
+
+suites:
+  - name: dev
+    provisioner:
+      extra_vars:
+        env: dev
+  - name: test
+    provisioner:
+      extra_vars:
+        env: test

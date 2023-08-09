@@ -1,0 +1,10 @@
+---
+- hosts: all
+  gather_facts: false
+  roles:
+    - windows-common
+    - Windows-2022-CIS
+  vars_files:
+    - "vars/windows.yaml"
+    - "vars/dev.yaml" # fall back to dev settings if not exist
+    - "vars/{{ env }}.yaml"

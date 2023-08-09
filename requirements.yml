@@ -1,0 +1,8 @@
+- name: Ubuntu-22-CIS
+  src: https://github.com/ansible-lockdown/UBUNTU22-CIS.git
+  version: main
+  scm: git
+- name: Windows-2022-CIS
+  src: https://github.com/ansible-lockdown/Windows-2022-CIS.git
+  version: main
+  scm: git
